@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratio Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Ratio Calculator</h2>
+        <div class="form-group">
+            <label for="inputNumber">Input Number</label>
+            <input type="number" id="inputNumber" placeholder="Enter a number">
+        </div>
+        <div class="form-group">
+            <label for="ratio1">Ratio 1</label>
+            <input type="number" id="ratio1" placeholder="Enter ratio 1">
+        </div>
+        <div class="form-group">
+            <label for="ratio2">Ratio 2</label>
+            <input type="number" id="ratio2" placeholder="Enter ratio 2">
+        </div>
+        <button onclick="calculateRatio()">Calculate</button>
+
+        <div class="output">
+            <p>Output 1: <span id="output1">-</span></p>
+            <p>Output 2: <span id="output2">-</span></p>
+        </div>
+    </div>
+
+    <script>
+        function calculateRatio() {
+            const inputNumber = parseFloat(document.getElementById('inputNumber').value);
+            const ratio1 = parseFloat(document.getElementById('ratio1').value);
+            const ratio2 = parseFloat(document.getElementById('ratio2').value);
+
+            if (isNaN(inputNumber) || isNaN(ratio1) || isNaN(ratio2) || ratio1 + ratio2 === 0) {
+                alert('Please enter valid numbers and ensure the sum of ratios is not zero.');
+                return;
+            }
+
+            const totalRatio = ratio1 + ratio2;
+            const output1 = (inputNumber * ratio1) / totalRatio;
+            const output2 = (inputNumber * ratio2) / totalRatio;
+
+            document.getElementById('output1').textContent = output1.toFixed(2);
+            document.getElementById('output2').textContent = output2.toFixed(2);
+        }
+    </script>
+</body>
+</html>
