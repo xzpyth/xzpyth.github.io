@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lighting Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .radio-group {
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Lighting Calculator</h2>
+        <div class="input-group">
+            <label for="width">Room Width (meters):</label>
+            <input type="number" id="width" placeholder="Enter width">
+        </div>
+        <div class="input-group">
+            <label for="depth">Room Depth (meters):</label>
+            <input type="number" id="depth" placeholder="Enter depth">
+        </div>
+        <div class="radio-group">
+            <label>Select Lighting Type:</label>
+            <label>
+                <input type="radio" name="lighting" value="150" data-description="Comfortable lighting: 100–200 lx (living rooms, bedrooms, or hallways) 2700K">
+                Comfortable lighting: 100–200 lx (2700K)
+            </label>
+            <label>
+                <input type="radio" name="lighting" value="400" data-description="Functional lighting: 300–500 lx (Kitchens, laundry rooms, garages, or craft rooms) 4000K">
+                Functional lighting: 300–500 lx (4000K)
+            </label>
+            <label>
+                <input type="radio" name="lighting" value="625" data-description="Focused task lighting: 500–750 lx (Offices, study areas, or reading nooks) 4000K">
+                Focused task lighting: 500–750 lx (4000K)
+            </label>
+        </div>
+        <button onclick="calculateLumens()">Calculate Lumens</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateLumens() {
+            const width = parseFloat(document.getElementById('width').value);
+            const depth = parseFloat(document.getElementById('depth').value);
+            const lightingType = document.querySelector('input[name="lighting"]:checked');
+
+            if (!width || !depth || !lightingType) {
+                document.getElementById('result').innerText = "Please fill all fields and select a lighting type.";
+                return;
+            }
+
+            const area = width * depth;
+            const lux = parseFloat(lightingType.value);
+            const lumens = area * lux;
+            const description = lightingType.getAttribute('data-description');
+
+            document.getElementById('result').innerText = `${description}\nTotal lumens needed: ${lumens.toFixed(2)} lm`;
+        }
+    </script>
+</body>
+</html>
