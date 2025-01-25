@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fidelity Factor Bitrate Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .calculator {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Fidelity Factor Bitrate Calculator</h2>
+    <label for="constant">Enter Your Bitrate Fidelity Constant (BFC):</label>
+    <input type="number" id="constant" step="0.01" placeholder="e.g., 2.0">
+    <br><br>
+    <button class="button" onclick="calculateBitrates()">Calculate Bitrates</button>
+
+    <div id="results" class="result" style="display: none;">
+        <h3>Results:</h3>
+        <p><strong>480p:</strong> <span id="bitrate480"></span> (BFC + 30%)</p>
+        <p><strong>720p:</strong> <span id="bitrate720"></span> (BFC + 15%)</p>
+        <p><strong>1080p:</strong> <span id="bitrate1080"></span> (BFC)</p>
+        <p><strong>1440p:</strong> <span id="bitrate1440"></span> (BFC - 2.5%)</p>
+        <p><strong>4K:</strong> <span id="bitrate4k"></span> (BFC - 5%)</p>
+    </div>
+</div>
+
+<script>
+    function calculateBitrates() {
+        const constant = parseFloat(document.getElementById("constant").value);
+
+        if (isNaN(constant) || constant <= 0) {
+            alert("Please enter a valid Bitrate Fidelity Constant (BFC).");
+            return;
+        }
+
+        // Define resolutions and adjustments
+        const resolutions = {
+            "480p": { pixels: 345600, adjustment: 1.3 }, // +30%
+            "720p": { pixels: 921600, adjustment: 1.15 }, // +15%
+            "1080p": { pixels: 2073600, adjustment: 1.0 }, // No change
+            "1440p": { pixels: 3686400, adjustment: 0.975 }, // -2.5%
+            "4K": { pixels: 8294400, adjustment: 0.95 } // -5%
+        };
+
+        // Calculate bitrates for each resolution
+        const results = {};
+        for (const [key, { pixels, adjustment }] of Object.entries(resolutions)) {
+            let bitrate = (constant * adjustment * pixels) / 1000;
+            bitrate = Math.round(bitrate / 100) * 100; // Round to the nearest 100
+            results[key] = bitrate.toFixed(0) + " kbps";
+        }
+
+        // Display results
+        document.getElementById("bitrate480").textContent = results["480p"];
+        document.getElementById("bitrate720").textContent = results["720p"];
+        document.getElementById("bitrate1080").textContent = results["1080p"];
+        document.getElementById("bitrate1440").textContent = results["1440p"];
+        document.getElementById("bitrate4k").textContent = results["4K"];
+        document.getElementById("results").style.display = "block";
+    }
+</script>
+
+</body>
+</html>
