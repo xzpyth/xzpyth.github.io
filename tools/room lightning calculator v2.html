@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lighting Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .radio-group {
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Lumen Calculator</h2>
+        <div class="input-group">
+            <label for="roomSize1">Room Size 1 (meters):</label>
+            <input type="number" id="roomSize1" placeholder="Enter size 1">
+        </div>
+        <div class="input-group">
+            <label for="roomSize2">Room Size 2 (meters):</label>
+            <input type="number" id="roomSize2" placeholder="Enter size 2">
+        </div>
+        <div class="radio-group">
+            <label>Desired Lux:</label>
+            <label>
+                <input type="radio" name="lux" value="50-150" data-description="Living room, Bedroom (50-150)">
+                Living room, Bedroom (50-150)
+            </label>
+            <label>
+                <input type="radio" name="lux" value="150" data-description="Kitchen (150)">
+                Kitchen (150)
+            </label>
+            <label>
+                <input type="radio" name="lux" value="400" data-description="Kitchen working areas (400)">
+                Kitchen working areas (400)
+            </label>
+            <label>
+                <input type="radio" name="lux" value="150-300" data-description="Bathrooms (150-300)">
+                Bathrooms (150-300)
+            </label>
+            <label>
+                <input type="radio" name="lux" value="100-150" data-description="Halls, stairs (100-150)">
+                Halls, stairs (100-150)
+            </label>
+            <label>
+                <input type="radio" name="lux" value="150-450" data-description="Dining rooms (150-450)">
+                Dining rooms (150-450)
+            </label>
+        </div>
+        <button onclick="calculateLumen()">Calculate</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateLumen() {
+            const roomSize1 = parseFloat(document.getElementById("roomSize1").value);
+            const roomSize2 = parseFloat(document.getElementById("roomSize2").value);
+            const selectedLux = document.querySelector('input[name="lux"]:checked');
+
+            if (!roomSize1 || !roomSize2 || !selectedLux) {
+                document.getElementById('result').innerText = "Please fill all fields and select a lux level.";
+                return;
+            }
+
+            const roomArea = roomSize1 * roomSize2;
+            const luxValue = selectedLux.value;
+            const description = selectedLux.getAttribute('data-description');
+            let lumenResult = "";
+
+            if (luxValue.includes("-")) {
+                const luxRange = luxValue.split("-");
+                const minLux = parseFloat(luxRange[0]);
+                const maxLux = parseFloat(luxRange[1]);
+                const minLumen = roomArea * minLux;
+                const maxLumen = roomArea * maxLux;
+                lumenResult = `${description}\nLumen needed: ${minLumen.toFixed(2)} - ${maxLumen.toFixed(2)} lm`;
+            } else {
+                const lux = parseFloat(luxValue);
+                const lumen = roomArea * lux;
+                lumenResult = `${description}\nLumen needed: ${lumen.toFixed(2)} lm`;
+            }
+
+            document.getElementById("result").innerText = lumenResult;
+        }
+    </script>
+</body>
+</html>
