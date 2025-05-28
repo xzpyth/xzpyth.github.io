@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitrate Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Custom styles for input focus */
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Blue glow */
+        }
+        /* Style for the message box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        .message-box.error {
+            background-color: #f44336; /* Red */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8 lg:p-10">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8">Bitrate Calculator</h1>
+
+        <div id="messageBox" class="message-box"></div>
+
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg shadow-sm">
+            <h2 class="text-xl font-semibold text-blue-800 mb-4">Global Settings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="episodeLength" class="block text-sm font-medium text-gray-700 mb-1">Episode Length (minutes):</label>
+                    <input type="number" id="episodeLength" value="60" min="1" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="episodesTotal" class="block text-sm font-medium text-gray-700 mb-1">Episodes Total (integer):</label>
+                    <input type="number" id="episodesTotal" value="1" min="1" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="bitrateSound" class="block text-sm font-medium text-gray-700 mb-1">Bitrate Sound (kbps):</label>
+                    <input type="number" id="bitrateSound" value="192" min="0" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-8 p-6 bg-purple-50 rounded-xl shadow-md">
+            <h2 class="text-2xl font-semibold text-purple-800 mb-4">DVD Bitrate Calculator</h2>
+            <p class="text-gray-600 mb-2">Total Usable Size: <span class="font-bold">4485 MB</span></p>
+            <p class="text-gray-600 mb-2">Size per Episode: <span id="dvdSizePerEpisode" class="font-bold text-purple-700">0 MB</span></p>
+            <p class="text-gray-600 mb-4">Video Bitrate: <span id="dvdBitrate" class="font-bold text-purple-700">0 kbps</span></p>
+            <button onclick="calculateDvdBitrate()" class="w-full md:w-auto px-6 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out">Calculate DVD Bitrate</button>
+        </div>
+
+        <div class="mb-8 p-6 bg-green-50 rounded-xl shadow-md">
+            <h2 class="text-2xl font-semibold text-green-800 mb-4">BD Bitrate Calculator</h2>
+            <p class="text-gray-600 mb-2">Total Usable Size: <span class="font-bold">23866 MB</span></p>
+            <p class="text-gray-600 mb-2">Size per Episode: <span id="bdSizePerEpisode" class="font-bold text-green-700">0 MB</span></p>
+            <p class="text-gray-600 mb-4">Video Bitrate: <span id="bdBitrate" class="font-bold text-green-700">0 kbps</span></p>
+            <button onclick="calculateBdBitrate()" class="w-full md:w-auto px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out">Calculate BD Bitrate</button>
+        </div>
+
+        <div class="mb-8 p-6 bg-yellow-50 rounded-xl shadow-md">
+            <h2 class="text-2xl font-semibold text-yellow-800 mb-4">Custom Disk Bitrate Calculator</h2>
+            <div class="mb-4">
+                <label for="customTotalUsableSize" class="block text-sm font-medium text-gray-700 mb-1">Total Usable Size (MB):</label>
+                <input type="number" id="customTotalUsableSize" value="4700" min="1" class="w-full p-2 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500">
+            </div>
+            <p class="text-gray-600 mb-2">Size per Episode: <span id="customSizePerEpisode" class="font-bold text-yellow-700">0 MB</span></p>
+            <p class="text-gray-600 mb-4">Video Bitrate: <span id="customBitrate" class="font-bold text-yellow-700">0 kbps</span></p>
+            <button onclick="calculateCustomBitrate()" class="w-full md:w-auto px-6 py-2 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out">Calculate Custom Bitrate</button>
+        </div>
+
+        <div class="mb-8 p-6 bg-red-50 rounded-xl shadow-md">
+            <h2 class="text-2xl font-semibold text-red-800 mb-4">General Bitrate Calculator</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="filesize" class="block text-sm font-medium text-gray-700 mb-1">Filesize (MB):</label>
+                    <input type="number" id="filesize" value="100" min="1" class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                </div>
+                <div>
+                    <label for="minutes" class="block text-sm font-medium text-gray-700 mb-1">Minutes (float):</label>
+                    <input type="number" id="minutes" value="10" min="0.01" step="0.01" class="w-full p-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500">
+                </div>
+            </div>
+            <p class="text-gray-600 mb-4">Bitrate: <span id="generalBitrate" class="font-bold text-red-700">0 kbps</span></p>
+            <button onclick="calculateGeneralBitrate()" class="w-full md:w-auto px-6 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-300 ease-in-out">Calculate General Bitrate</button>
+        </div>
+
+        <div class="p-6 bg-blue-50 rounded-xl shadow-md">
+            <h2 class="text-2xl font-semibold text-blue-800 mb-4">Time-to-Minutes Converter & Sum Table</h2>
+            <table class="min-w-full bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+                <thead>
+                    <tr class="bg-blue-100 text-blue-800">
+                        <th class="py-2 px-4 text-left text-sm font-medium">HH:MM:SS</th>
+                        <th class="py-2 px-4 text-left text-sm font-medium">Minutes (float)</th>
+                        <th class="py-2 px-4 text-left text-sm font-medium">Multiplier (x)</th>
+                        <th class="py-2 px-4 text-left text-sm font-medium">Sum</th>
+                        <th class="py-2 px-4 text-left text-sm font-medium">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="timeTableBody">
+                    <tr class="border-b border-gray-200 last:border-b-0">
+                        <td class="py-2 px-4">
+                            <input type="text" value="0:24:21" oninput="updateTableRow(this.closest('tr'))" class="w-28 p-1 border border-gray-300 rounded-md">
+                        </td>
+                        <td class="py-2 px-4 minutes-cell">24.35</td>
+                        <td class="py-2 px-4">
+                            <input type="number" value="3" oninput="updateTableRow(this.closest('tr'))" class="w-20 p-1 border border-gray-300 rounded-md">
+                        </td>
+                        <td class="py-2 px-4 sum-cell">73.05</td>
+                        <td class="py-2 px-4">
+                            <button onclick="removeTableRow(this)" class="text-red-600 hover:text-red-800 font-semibold">Remove</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="addTableRow()" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out mr-2">Add Row</button>
+            <p class="mt-4 text-lg font-bold text-gray-800">Total Sum of all sums: <span id="totalSum" class="text-blue-700">0</span></p>
+        </div>
+
+    </div>
+
+    <script>
+        // Function to display messages (success/error)
+        function showMessage(message, type = 'success') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.className = 'message-box show ' + type;
+            setTimeout(() => {
+                messageBox.className = 'message-box';
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // Helper function to get and validate common inputs
+        function getCommonInputs() {
+            const episodeLength = parseFloat(document.getElementById('episodeLength').value);
+            const episodesTotal = parseInt(document.getElementById('episodesTotal').value);
+            const bitrateSound = parseFloat(document.getElementById('bitrateSound').value);
+
+            if (isNaN(episodeLength) || episodeLength <= 0) {
+                showMessage("Please enter a valid positive Episode Length.", "error");
+                return null;
+            }
+            if (isNaN(episodesTotal) || episodesTotal <= 0) {
+                showMessage("Please enter a valid positive integer for Episodes Total.", "error");
+                return null;
+            }
+            if (isNaN(bitrateSound) || bitrateSound < 0) {
+                showMessage("Please enter a valid non-negative Bitrate Sound.", "error");
+                return null;
+            }
+            return { episodeLength, episodesTotal, bitrateSound };
+        }
+
+        // DVD Bitrate Calculator
+        function calculateDvdBitrate() {
+            const inputs = getCommonInputs();
+            if (!inputs) return;
+
+            const { episodeLength, episodesTotal, bitrateSound } = inputs;
+            const totalUsableSize = 4485; // MB
+
+            try {
+                const sizePerEpisode = totalUsableSize / episodesTotal;
+                // Convert MB to kilobits: MB * 1024 (KB/MB) * 8 (bits/byte)
+                // Convert minutes to seconds: minutes * 60
+                // Formula: (size_in_kilobits / total_seconds) - bitrate_sound
+                const bitrate = (sizePerEpisode * 1024 * 8) / (episodeLength * 60) - bitrateSound;
+
+                document.getElementById('dvdSizePerEpisode').textContent = sizePerEpisode.toFixed(2) + ' MB';
+                document.getElementById('dvdBitrate').textContent = bitrate.toFixed(2) + ' kbps';
+                showMessage("DVD Bitrate Calculated!");
+            } catch (error) {
+                showMessage("Error calculating DVD bitrate. Check inputs.", "error");
+                console.error(error);
+            }
+        }
+
+        // BD Bitrate Calculator
+        function calculateBdBitrate() {
+            const inputs = getCommonInputs();
+            if (!inputs) return;
+
+            const { episodeLength, episodesTotal, bitrateSound } = inputs;
+            const totalUsableSize = 23866; // MB
+
+            try {
+                const sizePerEpisode = totalUsableSize / episodesTotal;
+                const bitrate = (sizePerEpisode * 1024 * 8) / (episodeLength * 60) - bitrateSound;
+
+                document.getElementById('bdSizePerEpisode').textContent = sizePerEpisode.toFixed(2) + ' MB';
+                document.getElementById('bdBitrate').textContent = bitrate.toFixed(2) + ' kbps';
+                showMessage("BD Bitrate Calculated!");
+            } catch (error) {
+                showMessage("Error calculating BD bitrate. Check inputs.", "error");
+                console.error(error);
+            }
+        }
+
+        // Custom Disk Bitrate Calculator
+        function calculateCustomBitrate() {
+            const inputs = getCommonInputs();
+            if (!inputs) return;
+
+            const { episodeLength, episodesTotal, bitrateSound } = inputs;
+            const customTotalUsableSize = parseFloat(document.getElementById('customTotalUsableSize').value);
+
+            if (isNaN(customTotalUsableSize) || customTotalUsableSize <= 0) {
+                showMessage("Please enter a valid positive Custom Total Usable Size.", "error");
+                return;
+            }
+
+            try {
+                const sizePerEpisode = customTotalUsableSize / episodesTotal;
+                const bitrate = (sizePerEpisode * 1024 * 8) / (episodeLength * 60) - bitrateSound;
+
+                document.getElementById('customSizePerEpisode').textContent = sizePerEpisode.toFixed(2) + ' MB';
+                document.getElementById('customBitrate').textContent = bitrate.toFixed(2) + ' kbps';
+                showMessage("Custom Bitrate Calculated!");
+            } catch (error) {
+                showMessage("Error calculating Custom bitrate. Check inputs.", "error");
+                console.error(error);
+            }
+        }
+
+        // General Bitrate Calculator
+        function calculateGeneralBitrate() {
+            const filesize = parseFloat(document.getElementById('filesize').value);
+            const minutes = parseFloat(document.getElementById('minutes').value);
+
+            if (isNaN(filesize) || filesize <= 0) {
+                showMessage("Please enter a valid positive Filesize.", "error");
+                return;
+            }
+            if (isNaN(minutes) || minutes <= 0) {
+                showMessage("Please enter a valid positive Minutes value.", "error");
+                return;
+            }
+
+            try {
+                // Formula: (filesize * 8 * 1024) / (minutes * 60) [kbps]
+                // filesize (MB) * 8 (bits/byte) * 1024 (KB/MB) / (minutes * 60 seconds/minute)
+                // This formula directly converts MB to kilobits and divides by total seconds.
+                const bitrate = (filesize * 8 * 1024) / (minutes * 60);
+
+                document.getElementById('generalBitrate').textContent = bitrate.toFixed(2) + ' kbps';
+                showMessage("General Bitrate Calculated!");
+            } catch (error) {
+                showMessage("Error calculating general bitrate. Check inputs.", "error");
+                console.error(error);
+            }
+        }
+
+        // Time-to-Minutes Table Functions
+        function parseTimeToMinutes(timeStr) {
+            const parts = timeStr.split(':').map(Number);
+            if (parts.length === 3 && !parts.some(isNaN)) {
+                const hours = parts[0];
+                const minutes = parts[1];
+                const seconds = parts[2];
+                return (hours * 60) + minutes + (seconds / 60);
+            }
+            return NaN; // Invalid format
+        }
+
+        function updateTableRow(row) {
+            const timeInput = row.querySelector('td:nth-child(1) input');
+            const minutesCell = row.querySelector('.minutes-cell');
+            const multiplierInput = row.querySelector('td:nth-child(3) input');
+            const sumCell = row.querySelector('.sum-cell');
+
+            const timeStr = timeInput.value;
+            const minutes = parseTimeToMinutes(timeStr);
+            const multiplier = parseFloat(multiplierInput.value);
+
+            if (!isNaN(minutes)) {
+                minutesCell.textContent = minutes.toFixed(2);
+            } else {
+                minutesCell.textContent = 'Invalid Time';
+            }
+
+            if (!isNaN(minutes) && !isNaN(multiplier)) {
+                const sum = minutes * multiplier;
+                sumCell.textContent = sum.toFixed(2);
+            } else {
+                sumCell.textContent = 'N/A';
+            }
+            updateTotalSum();
+        }
+
+        function addTableRow() {
+            const tableBody = document.getElementById('timeTableBody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'border-b border-gray-200 last:border-b-0';
+            newRow.innerHTML = `
+                <td class="py-2 px-4">
+                    <input type="text" value="00:00:00" oninput="updateTableRow(this.closest('tr'))" class="w-28 p-1 border border-gray-300 rounded-md">
+                </td>
+                <td class="py-2 px-4 minutes-cell">0.00</td>
+                <td class="py-2 px-4">
+                    <input type="number" value="1" oninput="updateTableRow(this.closest('tr'))" class="w-20 p-1 border border-gray-300 rounded-md">
+                </td>
+                <td class="py-2 px-4 sum-cell">0.00</td>
+                <td class="py-2 px-4">
+                    <button onclick="removeTableRow(this)" class="text-red-600 hover:text-red-800 font-semibold">Remove</button>
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+            updateTableRow(newRow); // Initialize the new row's calculation
+            showMessage("New row added to table!");
+        }
+
+        function removeTableRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            updateTotalSum();
+            showMessage("Row removed from table.");
+        }
+
+        function updateTotalSum() {
+            const sumCells = document.querySelectorAll('#timeTableBody .sum-cell');
+            let total = 0;
+            sumCells.forEach(cell => {
+                const value = parseFloat(cell.textContent);
+                if (!isNaN(value)) {
+                    total += value;
+                }
+            });
+            document.getElementById('totalSum').textContent = total.toFixed(2);
+        }
+
+        // Initial calculations on page load for the example row
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialRow = document.querySelector('#timeTableBody tr');
+            if (initialRow) {
+                updateTableRow(initialRow);
+            }
+            // Trigger initial calculations for all calculators
+            calculateDvdBitrate();
+            calculateBdBitrate();
+            calculateCustomBitrate();
+            calculateGeneralBitrate();
+        });
+
+        // Add event listeners to common inputs to trigger recalculations
+        document.getElementById('episodeLength').addEventListener('input', () => {
+            calculateDvdBitrate();
+            calculateBdBitrate();
+            calculateCustomBitrate();
+        });
+        document.getElementById('episodesTotal').addEventListener('input', () => {
+            calculateDvdBitrate();
+            calculateBdBitrate();
+            calculateCustomBitrate();
+        });
+        document.getElementById('bitrateSound').addEventListener('input', () => {
+            calculateDvdBitrate();
+            calculateBdBitrate();
+            calculateCustomBitrate();
+        });
+        document.getElementById('customTotalUsableSize').addEventListener('input', calculateCustomBitrate);
+        document.getElementById('filesize').addEventListener('input', calculateGeneralBitrate);
+        document.getElementById('minutes').addEventListener('input', calculateGeneralBitrate);
+
+    </script>
+</body>
+</html>
