@@ -3,55 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to My Site</title>
+    <title>My Calculator Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom font for better aesthetics (Inter is used in the calculator) */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-        }
-        .content {
-            text-align: center;
-            margin-top: 50px;
-        }
-        .link {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .link:hover {
-            background-color: #218838;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background, matching calculator */
         }
     </style>
 </head>
-<body>
+<body class="p-4 sm:p-6 md:p-8 lg:p-10">
 
-<header>
-    <h1>Welcome to My Site</h1>
-</header>
+    <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg mt-10">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Welcome to My Calculator Hub</h1>
+            <p class="text-gray-600 text-lg mt-2">Choose a calculator from the options below:</p>
+        </header>
 
-<div class="content">
-    <p>DVD/Bluray Bitrate Calculator:</p>
-    <a href="tools/DVD BD Bitrate calculator.html" class="link">Go to Calculator</a>
-    <p>Room Lightning Calculator:</p>
-    <a href="tools/room lightning calculator v2.html" class="link">Go to Calculator</a>
-    <p>Divide Number by Ratio Calculator:</p>
-    <a href="tools/divide number ratio calculator.html" class="link">Go to Calculator</a>
-    <p>Fidelity Factor Bitrate Calculator:</p>
-    <a href="tools/Fidelity Factor Bitrate Calculator.html" class="link">Go to Calculator</a>
-    <p>Opus Multichannel Bitrate Calculator:</p>
-    <a href="tools/opus bitrate calculator.html" class="link">Go to Calculator</a>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-center">
+            <a href="tools/DVD BD Bitrate calculator.html" class="flex items-center justify-center p-6 h-32 bg-blue-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out">
+                DVD/Blu-ray Bitrate Calculator
+            </a>
 
-</div>
+            <a href="tools/room lightning calculator v2.html" class="flex items-center justify-center p-6 h-32 bg-green-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out">
+                Room Lighting Calculator
+            </a>
+
+            <a href="tools/divide number ratio calculator.html" class="flex items-center justify-center p-6 h-32 bg-purple-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out">
+                Divide Number by Ratio Calculator
+            </a>
+
+            <a href="tools/Fidelity Factor Bitrate Calculator.html" class="flex items-center justify-center p-6 h-32 bg-yellow-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out">
+                Fidelity Factor Bitrate Calculator
+            </a>
+
+            <a href="tools/opus bitrate calculator.html" class="flex items-center justify-center p-6 h-32 bg-red-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-red-700 transition duration-300 ease-in-out">
+                Opus Multichannel Bitrate Calculator
+            </a>
+            
+            </div>
+    </div>
 
 </body>
 </html>
