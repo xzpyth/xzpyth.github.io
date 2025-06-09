@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Translator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        /* Optional: Add some basic custom styles for body font, etc. */
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        /* Ensure the output box styles Markdown correctly (e.g., for code blocks, lists) */
+        #htmlOutput h1, #htmlOutput h2, #htmlOutput h3, #htmlOutput h4, #htmlOutput h5, #htmlOutput h6 {
+            font-weight: bold;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            line-height: 1.25; /* Adjusted for better spacing */
+        }
+        #htmlOutput h1 { font-size: 2.25rem; } /* text-4xl */
+        #htmlOutput h2 { font-size: 1.875rem; } /* text-3xl */
+        #htmlOutput h3 { font-size: 1.5rem; }   /* text-2xl */
+        #htmlOutput h4 { font-size: 1.25rem; }  /* text-xl */
+        #htmlOutput h5 { font-size: 1.125rem; } /* text-lg */
+        #htmlOutput h6 { font-size: 1rem; }     /* text-base */
+
+        #htmlOutput p {
+            margin-bottom: 1em;
+        }
+        #htmlOutput pre {
+            background-color: #f3f4f6; /* gray-100 */
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            margin-bottom: 1em;
+        }
+        #htmlOutput code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background-color: #e5e7eb; /* gray-200 */
+            padding: 0.15rem 0.3rem;
+            border-radius: 0.2rem;
+        }
+        #htmlOutput pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        #htmlOutput ul, #htmlOutput ol {
+            list-style-position: inside;
+            margin-bottom: 1em;
+            padding-left: 1.5em; /* Add some padding for better list appearance */
+        }
+        #htmlOutput ul {
+            list-style-type: disc;
+        }
+        #htmlOutput ol {
+            list-style-type: decimal;
+        }
+        #htmlOutput li {
+            margin-bottom: 0.5em;
+        }
+        #htmlOutput a {
+            color: #3b82f6; /* blue-500 */
+            text-decoration: underline;
+        }
+        #htmlOutput strong, #htmlOutput b {
+            font-weight: bold;
+        }
+        #htmlOutput em, #htmlOutput i {
+            font-style: italic;
+        }
+        #htmlOutput blockquote {
+            border-left: 4px solid #d1d5db; /* gray-300 */
+            padding-left: 1rem;
+            color: #6b7280; /* gray-500 */
+            margin-bottom: 1em;
+        }
+        #htmlOutput table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+        #htmlOutput th, #htmlOutput td {
+            border: 1px solid #e5e7eb; /* gray-200 */
+            padding: 0.75rem;
+            text-align: left;
+        }
+        #htmlOutput th {
+            background-color: #f3f4f6; /* gray-100 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-8">Markdown Translator</h1>
+
+        <div class="mb-6">
+            <label for="templateSelect" class="block text-lg font-medium text-gray-700 mb-2">Select a Markdown Template:</label>
+            <select
+                id="templateSelect"
+                class="block w-full px-4 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+                <option value="blank">-- Select a Template to Insert --</option>
+                <option value="heading">Heading</option>
+                <option value="paragraph">Paragraph</option>
+                <option value="bold">Bold Text</option>
+                <option value="italic">Italic Text</option>
+                <option value="boldItalic">Bold & Italic Text</option>
+                <option value="unorderedList">Unordered List</option>
+                <option value="orderedList">Ordered List</option>
+                <option value="inlineCode">Inline Code</option>
+                <option value="codeBlock">Code Block</option>
+                <option value="link">Link</option>
+                <option value="image">Image</option>
+                <option value="blockquote">Blockquote</option>
+                <option value="table">Table</option>
+                <option value="horizontalRule">Horizontal Rule</option>
+                <option value="fullExample">Full Example</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            <div class="flex-1 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Markdown Input</h2>
+                <textarea
+                    id="markdownInput"
+                    placeholder="Start typing or select a template..."
+                    class="w-full h-80 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y text-lg"
+                ></textarea>
+            </div>
+
+            <div class="flex-1 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">HTML Output</h2>
+                <div
+                    id="htmlOutput"
+                    class="w-full h-80 p-4 border border-gray-300 rounded-md bg-gray-50 overflow-y-auto text-base"
+                >
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const markdownInput = document.getElementById('markdownInput');
+            const htmlOutput = document.getElementById('htmlOutput');
+            const templateSelect = document.getElementById('templateSelect');
+
+            // Define your Markdown templates
+            const templates = {
+                blank: '', // No longer used for insertion, but good to have
+                heading: `# My Heading`,
+                paragraph: `This is a new paragraph.
+It contains some text.`,
+                bold: `**bold text**`,
+                italic: `*italic text*`,
+                boldItalic: `***bold and italic text***`,
+                unorderedList: `- Item 1
+- Item 2
+  - Sub-item 2.1`,
+                orderedList: `1. First item
+2. Second item
+   1. Sub-second 1`,
+                inlineCode: `This is some \`inline code\`.`,
+                codeBlock: `\`\`\`javascript
+// Your code here
+function example() {
+    console.log("Hello!");
+}
+\`\`\``,
+                link: `[Link Text](https://example.com "Optional Title")`,
+                image: `![Alt Text](https://via.placeholder.com/150 "Optional Title")`,
+                blockquote: `> This is a blockquote.
+> It can span multiple lines.`,
+                table: `| Header 1 | Header 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |`,
+                horizontalRule: `---`,
+                fullExample: `# Welcome to Markdown!
+
+This is a **comprehensive** example demonstrating various Markdown features.
+
+## Headings and Paragraphs
+### Sub-heading
+A regular paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Curabitur vel turpis ac lectus tristique sollicitudin.
+
+## Lists
+### Unordered
+* Item A
+* Item B
+  * Sub-item B1
+  * Sub-item B2
+    * Deep sub-item B2.1
+* Item C
+
+### Ordered
+1. First thing
+2. Second thing
+   1. Sub-second 1
+   2. Sub-second 2
+3. Third thing
+
+## Code
+Inline code: \`console.log("Hello, World!")\`
+
+\`\`\`python
+# Python code block
+def greet(name):
+    return f"Hello, {name}!"
+
+message = greet("Markdown")
+print(message)
+\`\`\`
+
+## Links & Images
+Visit my [GitHub Profile](https://github.com/your-username).
+An example image: ![Placeholder Image](https://via.placeholder.com/200x100?text=Hello+Image)
+
+## Blockquote
+> "The only way to do great work is to love what you do."
+> - Steve Jobs
+
+## Table
+| Feature     | Description                 | Support |
+| :---------- | :-------------------------- | :------ |
+| Headings    | All levels (H1-H6)          | Yes     |
+| Lists       | Unordered & Ordered         | Yes     |
+| Code Blocks | Syntax highlighting (if JS) | Yes     |
+| Tables      | Standard Markdown tables    | Yes     |
+| Images      | Inline images               | Yes     |
+
+## Horizontal Rule
+A section break:
+---
+Another section.
+`
+            };
+
+            // Function to convert Markdown to HTML
+            function convertMarkdownToHtml() {
+                const markdownText = markdownInput.value;
+                htmlOutput.innerHTML = marked.parse(markdownText);
+            }
+
+            // Event listener for template selection
+            templateSelect.addEventListener('change', () => {
+                const selectedTemplateKey = templateSelect.value;
+                const templateText = templates[selectedTemplateKey];
+
+                if (templateText !== undefined) {
+                    const currentInput = markdownInput.value;
+                    const start = markdownInput.selectionStart;
+                    const end = markdownInput.selectionEnd;
+
+                    // Insert template text at cursor position
+                    const newValue = currentInput.substring(0, start) + templateText + currentInput.substring(end);
+                    markdownInput.value = newValue;
+
+                    // Move cursor to the end of the inserted text
+                    markdownInput.selectionStart = markdownInput.selectionEnd = start + templateText.length;
+
+                    // Focus the textarea so user can continue typing
+                    markdownInput.focus();
+
+                    // Refresh output
+                    convertMarkdownToHtml();
+                }
+
+                // Reset the select dropdown to the "Select a Template" option
+                templateSelect.value = "blank";
+            });
+
+            // Initial setup: blank input and immediate conversion
+            markdownInput.value = ''; // Start with a completely blank input
+            convertMarkdownToHtml();
+
+            // Listen for input changes in the markdownInput textarea for real-time updates
+            markdownInput.addEventListener('input', convertMarkdownToHtml);
+        });
+    </script>
+</body>
+</html>

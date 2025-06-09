@@ -21,29 +21,65 @@
             <p class="text-gray-600 text-lg mt-2">Choose a calculator from the options below:</p>
         </header>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-center">
-            <a href="tools/DVD BD Bitrate calculator.html" class="flex items-center justify-center p-6 h-32 bg-blue-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-blue-700 transition duration-300 ease-in-out">
-                DVD/Blu-ray Bitrate Calculator
-            </a>
-
-            <a href="tools/room lightning calculator v2.html" class="flex items-center justify-center p-6 h-32 bg-green-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-green-700 transition duration-300 ease-in-out">
-                Room Lighting Calculator
-            </a>
-
-            <a href="tools/divide number ratio calculator.html" class="flex items-center justify-center p-6 h-32 bg-purple-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-purple-700 transition duration-300 ease-in-out">
-                Divide Number by Ratio Calculator
-            </a>
-
-            <a href="tools/Fidelity Factor Bitrate Calculator.html" class="flex items-center justify-center p-6 h-32 bg-yellow-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-yellow-700 transition duration-300 ease-in-out">
-                Fidelity Factor Bitrate Calculator
-            </a>
-
-            <a href="tools/opus bitrate calculator.html" class="flex items-center justify-center p-6 h-32 bg-red-600 text-white font-semibold text-lg rounded-lg shadow-md hover:bg-red-700 transition duration-300 ease-in-out">
-                Opus Multichannel Bitrate Calculator
-            </a>
-            
+        <div id="calculators-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-center">
             </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('calculators-container');
+
+            // --- Configuration for your calculators ---
+            // To add a new calculator:
+            // 1. Create your HTML file in the 'tools' directory.
+            // 2. Add its filename (e.g., 'my new tool.html') to this 'toolsList' array.
+            //    The script will automatically generate a title and a random color.
+            const toolsList = [
+                'DVD BD Bitrate calculator.html',
+                'room lightning calculator v2.html',
+                'divide number ratio calculator.html',
+                'Fidelity Factor Bitrate Calculator.html',
+                'opus bitrate calculator.html',
+                'markdown translator.html',
+            ];
+
+            // List of Tailwind CSS colors you want to use for buttons
+            // Add or remove colors as you like. Make sure to include 600 and 700 shades.
+            const buttonColors = [
+                'blue', 'green', 'purple', 'yellow', 'red', 'indigo', 'pink', 'teal', 'orange', 'emerald'
+            ];
+
+            // Function to generate a user-friendly title from a filename
+            function generateTitle(filename) {
+                // Remove the .html extension
+                let title = filename.replace(/\.html$/i, '');
+                // Replace hyphens and underscores with spaces
+                title = title.replace(/[-_]/g, ' ');
+                // Capitalize the first letter of each word
+                title = title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                return title;
+            }
+
+            // Function to get a random color class
+            function getRandomColorClass() {
+                const randomColorBase = buttonColors[Math.floor(Math.random() * buttonColors.length)];
+                return `bg-${randomColorBase}-600 hover:bg-${randomColorBase}-700`;
+            }
+
+            // Generate and append buttons
+            toolsList.forEach(filename => {
+                const title = generateTitle(filename);
+                const colorClasses = getRandomColorClass(); // Get random color for each button
+
+                const link = document.createElement('a');
+                link.href = `tools/${filename}`; // Link to the actual tool file
+                link.className = `flex items-center justify-center p-6 h-32 ${colorClasses} text-white font-semibold text-lg rounded-lg shadow-md transition duration-300 ease-in-out`;
+                link.textContent = title;
+
+                container.appendChild(link);
+            });
+        });
+    </script>
 
 </body>
 </html>
