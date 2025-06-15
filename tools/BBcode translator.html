@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBCode Translator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* Optional: Add some basic custom styles for body font, etc. */
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        /* Ensure the output box styles BBCode converted HTML correctly */
+        #htmlOutput h1, #htmlOutput h2, #htmlOutput h3, #htmlOutput h4, #htmlOutput h5, #htmlOutput h6 {
+            font-weight: bold;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            line-height: 1.25;
+        }
+        #htmlOutput h1 { font-size: 2.25rem; }
+        #htmlOutput h2 { font-size: 1.875rem; }
+        #htmlOutput h3 { font-size: 1.5rem; }
+        #htmlOutput h4 { font-size: 1.25rem; }
+        #htmlOutput h5 { font-size: 1.125rem; }
+        #htmlOutput h6 { font-size: 1rem; }
+
+        #htmlOutput p {
+            margin-bottom: 1em;
+        }
+        #htmlOutput pre {
+            background-color: #f3f4f6;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            margin-bottom: 1em;
+        }
+        #htmlOutput code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background-color: #e5e7eb;
+            padding: 0.15rem 0.3rem;
+            border-radius: 0.2rem;
+        }
+        #htmlOutput pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        #htmlOutput ul, #htmlOutput ol {
+            list-style-position: inside;
+            margin-bottom: 1em;
+            padding-left: 1.5em;
+        }
+        #htmlOutput ul {
+            list-style-type: disc;
+        }
+        #htmlOutput ol {
+            list-style-type: decimal;
+        }
+        #htmlOutput li {
+            margin-bottom: 0.5em;
+        }
+        #htmlOutput a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+        #htmlOutput strong, #htmlOutput b {
+            font-weight: bold;
+        }
+        #htmlOutput em, #htmlOutput i {
+            font-style: italic;
+        }
+        #htmlOutput blockquote {
+            border-left: 4px solid #d1d5db;
+            padding-left: 1rem;
+            color: #6b7280;
+            margin-bottom: 1em;
+        }
+        #htmlOutput table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+        }
+        #htmlOutput th, #htmlOutput td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        #htmlOutput th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-8">BBCode Translator</h1>
+
+        <div class="mb-6">
+            <label for="templateSelect" class="block text-lg font-medium text-gray-700 mb-2">Select a BBCode Template:</label>
+            <select
+                id="templateSelect"
+                class="block w-full px-4 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+                <option value="blank">-- Select a Template to Insert --</option>
+                <option value="bold">[b]Bold Text[/b]</option>
+                <option value="italic">[i]Italic Text[/i]</option>
+                <option value="underline">[u]Underlined Text[/u]</option>
+                <option value="strike">[s]Strikethrough Text[/s]</option>
+                <option value="color">[color=red]Red Text[/color]</option>
+                <option value="size">[size=20]Large Text[/size]</option>
+                <option value="center">[center]Centered Text[/center]</option>
+                <option value="left">[left]Left Aligned Text[/left]</option>
+                <option value="right">[right]Right Aligned Text[/right]</option>
+                <option value="url">[url=https://example.com]Link Text[/url]</option>
+                <option value="img">[img]https://via.placeholder.com/150[/img]</option>
+                <option value="quote">[quote]This is a quote.[/quote]</option>
+                <option value="code">[code]console.log("Hello!");[/code]</option>
+                <option value="listUnordered">[list][*]Item 1[*]Item 2[/list]</option>
+                <option value="listOrdered">[list=1][*]First[*]Second[/list]</option>
+                <option value="fullExample">Full Example</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            <div class="flex-1 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">BBCode Input</h2>
+                <textarea
+                    id="bbcodeInput"
+                    placeholder="Start typing or select a template..."
+                    class="w-full h-80 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y text-lg"
+                ></textarea>
+            </div>
+
+            <div class="flex-1 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">HTML Output</h2>
+                <div
+                    id="htmlOutput"
+                    class="w-full h-80 p-4 border border-gray-300 rounded-md bg-gray-50 overflow-y-auto text-base"
+                >
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bbcodeInput = document.getElementById('bbcodeInput');
+            const htmlOutput = document.getElementById('htmlOutput');
+            const templateSelect = document.getElementById('templateSelect');
+
+            // Basic BBCode to HTML converter function
+            function convertBBCodeToHtml(bbcode) {
+                let html = bbcode;
+
+                // Basic replacements
+                html = html.replace(/\[b\](.*?)\[\/b\]/gs, '<strong>$1</strong>');
+                html = html.replace(/\[i\](.*?)\[\/i\]/gs, '<em>$1</em>');
+                html = html.replace(/\[u\](.*?)\[\/u\]/gs, '<u>$1</u>');
+                html = html.replace(/\[s\](.*?)\[\/s\]/gs, '<s>$1</s>');
+                html = html.replace(/\[center\](.*?)\[\/center\]/gs, '<div style="text-align:center;">$1</div>');
+                html = html.replace(/\[left\](.*?)\[\/left\]/gs, '<div style="text-align:left;">$1</div>');
+                html = html.replace(/\[right\](.*?)\[\/right\]/gs, '<div style="text-align:right;">$1</div>');
+                html = html.replace(/\[color=(.*?)\](.*?)\[\/color\]/gs, '<span style="color:$1;">$2</span>');
+                html = html.replace(/\[size=(.*?)\](.*?)\[\/size\]/gs, '<span style="font-size:$1px;">$2</span>');
+
+                // Links
+                html = html.replace(/\[url=(.*?)\](.*?)\[\/url\]/gs, '<a href="$1">$2</a>');
+                html = html.replace(/\[url\](.*?)\[\/url\]/gs, '<a href="$1">$1</a>');
+
+                // Images
+                html = html.replace(/\[img\](.*?)\[\/img\]/gs, '<img src="$1" style="max-width:100%; height:auto;">');
+
+                // Quotes
+                html = html.replace(/\[quote\](.*?)\[\/quote\]/gs, '<blockquote>$1</blockquote>');
+                html = html.replace(/\[quote=(.*?)\](.*?)\[\/quote\]/gs, '<blockquote><p><b>$1 wrote:</b></p>$2</blockquote>');
+
+
+                // Code blocks - simple pre/code
+                html = html.replace(/\[code\](.*?)\[\/code\]/gs, '<pre><code>$1</code></pre>');
+
+                // Lists (simple conversion for now, assumes [*] for items)
+                // Unordered list
+                html = html.replace(/\[list\](.*?)\[\/list\]/gs, (match, content) => {
+                    let items = content.split('[*]').filter(item => item.trim() !== '').map(item => `<li>${item.trim()}</li>`).join('');
+                    return `<ul>${items}</ul>`;
+                });
+                // Ordered list
+                html = html.replace(/\[list=(\d+)\](.*?)\[\/list\]/gs, (match, startNum, content) => {
+                    let items = content.split('[*]').filter(item => item.trim() !== '').map(item => `<li>${item.trim()}</li>`).join('');
+                    return `<ol start="${startNum}">${items}</ol>`;
+                });
+                 // Handle lone [*]
+                html = html.replace(/\[\*\]/g, '<li>'); // Convert any remaining standalone [*]
+
+                // Newlines to paragraphs, but not inside pre/code or blockquote (simplified)
+                // This is a common simplification. A more robust parser would manage block-level elements.
+                html = html.split('\n').map(line => {
+                    if (line.startsWith('<li>') || line.startsWith('<ul') || line.startsWith('<ol') || line.startsWith('<blockquote') || line.startsWith('<pre')) {
+                        return line;
+                    }
+                    return `<p>${line}</p>`;
+                }).join('');
+
+                // Remove empty paragraphs that might result from the above
+                html = html.replace(/<p><\/p>/g, '');
+                html = html.replace(/<p>\s*<\/p>/g, ''); // Also remove paragraphs with only whitespace
+
+                return html;
+            }
+
+            // Define your BBCode templates
+            const templates = {
+                blank: '',
+                bold: `[b]Bold Text[/b]`,
+                italic: `[i]Italic Text[/i]`,
+                underline: `[u]Underlined Text[/u]`,
+                strike: `[s]Strikethrough Text[/s]`,
+                color: `[color=blue]This text is blue.[/color]`,
+                size: `[size=24]This text is 24px.[/size]`,
+                center: `[center]This text is centered.[/center]`,
+                left: `[left]This text is left-aligned.[/left]`,
+                right: `[right]This text is right-aligned.[/right]`,
+                url: `[url=https://www.google.com]Google[/url]`,
+                img: `[img]https://via.placeholder.com/150/0000FF/FFFFFF?text=BBCode+Image[/img]`,
+                quote: `[quote]This is a simple quote.[/quote]`,
+                code: `[code]
+function helloBBCode() {
+    console.log("Hello from BBCode!");
+}
+helloBBCode();
+[/code]`,
+                listUnordered: `[list]
+[*]Item One
+[*]Item Two
+[*]Item Three
+[/list]`,
+                listOrdered: `[list=1]
+[*]First point
+[*]Second point
+[*]Third point
+[/list]`,
+                fullExample: `[center][b][size=20]Welcome to BBCode![/size][/b][/center]
+
+This is a [i]comprehensive[/i] example demonstrating various BBCode features.
+
+[color=green]This text is green.[/color]
+[u]This text is underlined.[/u]
+[s]This text has a strikethrough.[/s]
+
+[left]Here is some text aligned to the left.[/left]
+[right]And this text is aligned to the right.[/right]
+
+[quote=Anonymous]The only way to do great work is to love what you do.[/quote]
+
+[b]Lists:[/b]
+[list]
+[*]Unordered Item A
+[*]Unordered Item B
+  [list]
+  [*]Sub-item B1
+  [*]Sub-item B2
+  [/list]
+[*]Unordered Item C
+[/list]
+
+[list=1]
+[*]Ordered Item 1
+[*]Ordered Item 2
+  [list=a]
+  [*]Sub-item 2a
+  [*]Sub-item 2b
+  [/list]
+[*]Ordered Item 3
+[/list]
+
+[b]Code Example:[/b]
+[code]
+// This is a code block
+function exampleFunction() {
+    alert("BBCode is fun!");
+}
+exampleFunction();
+[/code]
+
+[b]Links and Images:[/b]
+Visit [url=https://www.example.com]Example Website[/url] or just [url]https://www.google.com[/url].
+Here's an image: [img]https://via.placeholder.com/200x100?text=BBCode+Image+Example[/img]
+
+[color=purple][size=16]Thank you for trying the BBCode Translator![/size][/color]`
+            };
+
+            // Function to convert BBCode to HTML
+            function updateHtmlOutput() {
+                const bbcodeText = bbcodeInput.value;
+                htmlOutput.innerHTML = convertBBCodeToHtml(bbcodeText);
+            }
+
+            // Event listener for template selection
+            templateSelect.addEventListener('change', () => {
+                const selectedTemplateKey = templateSelect.value;
+                const templateText = templates[selectedTemplateKey];
+
+                if (templateText !== undefined) {
+                    const currentInput = bbcodeInput.value;
+                    const start = bbcodeInput.selectionStart;
+                    const end = bbcodeInput.selectionEnd;
+
+                    // Insert template text at cursor position
+                    const newValue = currentInput.substring(0, start) + templateText + currentInput.substring(end);
+                    bbcodeInput.value = newValue;
+
+                    // Move cursor to the end of the inserted text
+                    bbcodeInput.selectionStart = bbcodeInput.selectionEnd = start + templateText.length;
+
+                    // Focus the textarea so user can continue typing
+                    bbcodeInput.focus();
+
+                    // Refresh output
+                    updateHtmlOutput();
+                }
+
+                // Reset the select dropdown to the "Select a Template" option
+                templateSelect.value = "blank";
+            });
+
+            // Initial setup: blank input and immediate conversion
+            bbcodeInput.value = ''; // Start with a completely blank input
+            updateHtmlOutput();
+
+            // Listen for input changes in the bbcodeInput textarea for real-time updates
+            bbcodeInput.addEventListener('input', updateHtmlOutput);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genshin Impact Chest Tracker</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            width: 100%;
+            margin-top: 2rem;
+        }
+        .chest-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+            background-color: #f9fafb; /* Light background for rows */
+        }
+        .chest-row:hover {
+            background-color: #f3f4f6;
+        }
+        .chest-name {
+            font-weight: 600;
+            flex-grow: 1;
+            margin-left: 0.75rem;
+        }
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .count-display {
+            min-width: 2.5rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #334155;
+        }
+        .control-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #e2e8f0;
+            color: #475569;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .control-button:hover {
+            background-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .control-button:active {
+            transform: translateY(0);
+            background-color: #94a3b8;
+        }
+        /* Specific colors for chest types */
+        .common-chest { color: #80ef80; } /* pastel green */
+        .exquisite-chest { color: #38bdf8; } /* light blue */
+        .precious-chest { color: #a855f7; } /* purple */
+        .luxurious-chest { color: #fbbf24; } /* golden */
+        .remarkable-chest { color: #22c55e; } /* green */
+
+        .collectible-item {
+            color: #64748b; /* Gray for collectibles */
+        }
+        .total-section {
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .log-box {
+            background-color: #f1f5f9;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+            color: #475569;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-wrap: break-word; /* Break long words */
+        }
+        .log-entry {
+            margin-bottom: 0.25rem;
+        }
+        .add-custom-button {
+            background-color: #6366f1; /* Indigo */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 1rem;
+            width: fit-content;
+        }
+        .add-custom-button:hover {
+            background-color: #4338ca;
+            transform: translateY(-1px);
+        }
+        .add-custom-button:active {
+            transform: translateY(0);
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 1.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+        }
+        .modal-body label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .modal-body input[type="text"],
+        .modal-body select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .modal-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .modal-button.cancel {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        .modal-button.cancel:hover {
+            background-color: #cbd5e1;
+        }
+        .modal-button.add {
+            background-color: #22c55e;
+            color: white;
+        }
+        .modal-button.add:hover {
+            background-color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Genshin Impact Tracker</h1>
+
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Chests</h2>
+            <div id="chests-container">
+                <!-- Chest rows will be inserted here by JavaScript -->
+            </div>
+            <button id="add-custom-chest-btn" class="add-custom-button flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Add Custom Chest
+            </button>
+        </div>
+
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Collectibles</h2>
+            <div id="collectibles-container">
+                <!-- Collectible rows will be inserted here by JavaScript -->
+            </div>
+            <button id="add-custom-collectible-btn" class="add-custom-button flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Add Custom Collectible
+            </button>
+        </div>
+
+        <div class="total-section mb-6">
+            <span>Total Chests:</span>
+            <span id="total-chests-display">0</span>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-semibold text-gray-700 mb-3">Activity Log</h2>
+            <div id="log-display" class="log-box">
+                <!-- Log entries will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding custom items -->
+    <div id="customItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add Custom Item</h2>
+                <span class="close-button" id="closeModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <label for="itemName">Item Name:</label>
+                <input type="text" id="itemName" placeholder="e.g., Common Chest, Dendroculus">
+
+                <label for="itemType">Item Type:</label>
+                <select id="itemType">
+                    <option value="chest">Chest</option>
+                    <option value="collectible">Collectible</option>
+                </select>
+
+                <label for="itemColor">Color Hint (for chests):</label>
+                <select id="itemColor">
+                    <option value="green-400">Common (green)</option>
+                    <option value="sky-500">Exquisite (Blue)</option>
+                    <option value="purple-500">Precious (Purple)</option>
+                    <option value="amber-400">Luxurious (Golden)</option>
+                    <option value="gray-500">Other (Gray)</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button cancel" id="cancelAddItemBtn">Cancel</button>
+                <button class="modal-button add" id="saveAddItemBtn">Add Item</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Elements ---
+        const chestsContainer = document.getElementById('chests-container');
+        const collectiblesContainer = document.getElementById('collectibles-container');
+        const totalChestsDisplay = document.getElementById('total-chests-display');
+        const logDisplay = document.getElementById('log-display');
+        const addCustomChestBtn = document.getElementById('add-custom-chest-btn');
+        const addCustomCollectibleBtn = document.getElementById('add-custom-collectible-btn');
+
+        // Modal elements
+        const customItemModal = document.getElementById('customItemModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelAddItemBtn = document.getElementById('cancelAddItemBtn');
+        const saveAddItemBtn = document.getElementById('saveAddItemBtn');
+        const itemNameInput = document.getElementById('itemName');
+        const itemTypeSelect = document.getElementById('itemType');
+        const itemColorSelect = document.getElementById('itemColor');
+        const modalTitle = document.getElementById('modal-title');
+
+        // --- Data Storage ---
+        const items = new Map();
+        let itemIdCounter = 0; // **FIX: Added for unique IDs**
+
+        // --- Helper Functions ---
+
+        /**
+         * Formats the current timestamp for log entries.
+         * @returns {string} Formatted timestamp.
+         */
+        function getTimestamp() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        /**
+         * Adds an entry to the activity log.
+         * @param {string} message - The message to log.
+         */
+        function addToLog(message) {
+            const logEntry = document.createElement('div');
+            logEntry.classList.add('log-entry');
+            logEntry.textContent = `[${getTimestamp()}] ${message}`;
+            logDisplay.prepend(logEntry);
+            if (logDisplay.children.length > 50) {
+                logDisplay.removeChild(logDisplay.lastChild);
+            }
+        }
+
+        /**
+         * Updates the count for a specific item and triggers total update.
+         * @param {string} itemId - The unique ID of the item.
+         * @param {number} delta - The amount to change the count by (+1 or -1).
+         */
+        function updateItemCount(itemId, delta) {
+            const item = items.get(itemId);
+            if (!item) return;
+
+            const newCount = item.count + delta;
+            if (newCount < 0) return;
+
+            item.count = newCount;
+            item.element.querySelector('.count-display').textContent = newCount;
+
+            updateTotalChests();
+            const action = delta > 0 ? '+' : '-';
+            addToLog(`${action}${Math.abs(delta)} ${item.name} (${item.count} total)`);
+        }
+
+        /**
+         * Updates the total count of checked chests.
+         */
+        function updateTotalChests() {
+            let total = 0;
+            items.forEach(item => {
+                if (item.isCounted) {
+                    total += item.count;
+                }
+            });
+            totalChestsDisplay.textContent = total;
+        }
+
+        /**
+         * Creates and appends a new item row to the DOM.
+         * @param {string} name - Name of the item.
+         * @param {'chest'|'collectible'} type - Type of item.
+         * @param {string} colorClass - Tailwind color class.
+         * @param {boolean} isCountedByDefault - Whether it's included in the total by default.
+         */
+        function createItemRow(name, type, colorClass, isCountedByDefault) {
+            // **FIX: Use a counter for truly unique IDs**
+            const itemId = `${type}-${itemIdCounter++}`;
+            const initialCount = 0;
+
+            const itemRow = document.createElement('div');
+            itemRow.classList.add('chest-row', 'items-center', 'sm:flex-row', 'flex-col', 'flex-wrap', 'gap-2', 'sm:gap-0');
+            itemRow.dataset.itemId = itemId;
+
+            const displayColorClass = type === 'chest' ? `text-${colorClass}` : 'collectible-item';
+
+            itemRow.innerHTML = `
+                <div class="flex items-center flex-grow">
+                    <input type="checkbox" id="checkbox-${itemId}" class="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                    <label for="checkbox-${itemId}" class="chest-name text-gray-800 ${displayColorClass}">${name}</label>
+                </div>
+                <div class="counter-controls mt-2 sm:mt-0">
+                    <button class="control-button minus-button">-</button>
+                    <span class="count-display">${initialCount}</span>
+                    <button class="control-button plus-button">+</button>
+                </div>
+            `;
+
+            items.set(itemId, {
+                name,
+                type,
+                count: initialCount,
+                isCounted: isCountedByDefault,
+                colorClass,
+                element: itemRow
+            });
+
+            if (type === 'chest') {
+                chestsContainer.appendChild(itemRow);
+            } else {
+                collectiblesContainer.appendChild(itemRow);
+            }
+
+            const plusButton = itemRow.querySelector('.plus-button');
+            const minusButton = itemRow.querySelector('.minus-button');
+            const checkbox = itemRow.querySelector(`#checkbox-${itemId}`);
+
+            // **FIX: Simplified and more robust event listeners**
+            plusButton.addEventListener('click', () => {
+                updateItemCount(itemId, 1);
+            });
+            minusButton.addEventListener('click', () => {
+                updateItemCount(itemId, -1);
+            });
+
+            checkbox.checked = isCountedByDefault;
+            checkbox.addEventListener('change', (event) => {
+                const item = items.get(itemId);
+                if (item) {
+                    item.isCounted = event.target.checked;
+                    updateTotalChests();
+                    addToLog(`${item.name} is now ${item.isCounted ? 'included' : 'excluded'} from total.`);
+                }
+            });
+
+            if (isCountedByDefault) {
+                updateTotalChests();
+            }
+
+            addToLog(`Added new ${type}: ${name}`);
+        }
+
+        // --- Initial Items ---
+        createItemRow('Common Chest', 'chest', 'green-400', true);
+        createItemRow('Exquisite Chest', 'chest', 'sky-500', true);
+        createItemRow('Precious Chest', 'chest', 'purple-500', true);
+        createItemRow('Luxurious Chest', 'chest', 'amber-400', true);
+        createItemRow('Remarkable Chest', 'chest', 'green-500', true);
+        createItemRow('Mora', 'collectible', 'gray-500', false);
+        createItemRow('Oculus', 'collectible', 'gray-500', false);
+
+        // --- Modal Logic ---
+        let currentAddItemType = 'chest';
+
+        addCustomChestBtn.addEventListener('click', () => {
+            modalTitle.textContent = 'Add Custom Chest';
+            itemTypeSelect.value = 'chest';
+            document.querySelector('label[for="itemColor"]').style.display = 'block';
+            itemColorSelect.style.display = 'block';
+            currentAddItemType = 'chest';
+            customItemModal.style.display = 'flex';
+            itemNameInput.focus();
+        });
+
+        addCustomCollectibleBtn.addEventListener('click', () => {
+            modalTitle.textContent = 'Add Custom Collectible';
+            itemTypeSelect.value = 'collectible';
+            document.querySelector('label[for="itemColor"]').style.display = 'none';
+            itemColorSelect.style.display = 'none';
+            currentAddItemType = 'collectible';
+            customItemModal.style.display = 'flex';
+            itemNameInput.focus();
+        });
+
+        const closeModal = () => {
+            customItemModal.style.display = 'none';
+            itemNameInput.value = '';
+            itemColorSelect.value = 'gray-500';
+        };
+
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelAddItemBtn.addEventListener('click', closeModal);
+
+        saveAddItemBtn.addEventListener('click', () => {
+            const name = itemNameInput.value.trim();
+            const type = itemTypeSelect.value;
+            const color = itemColorSelect.value;
+
+            if (name === '') {
+                alert("Please enter an item name."); // Simple feedback
+                return;
+            }
+
+            createItemRow(name, type, color, type === 'chest');
+            closeModal();
+        });
+
+        customItemModal.addEventListener('click', (event) => {
+            if (event.target === customItemModal) {
+                closeModal();
+            }
+        });
+
+        itemTypeSelect.addEventListener('change', () => {
+            const isChest = itemTypeSelect.value === 'chest';
+            document.querySelector('label[for="itemColor"]').style.display = isChest ? 'block' : 'none';
+            itemColorSelect.style.display = isChest ? 'block' : 'none';
+        });
+
+        updateTotalChests();
+    });
+</script>
+</body>
+</html>
